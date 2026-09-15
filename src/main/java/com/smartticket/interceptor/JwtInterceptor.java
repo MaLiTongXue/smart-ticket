@@ -26,6 +26,8 @@ public class JwtInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
 
+        System.out.println("    ---------- [Interceptor] preHandle 执行了 ----------");
+
         // 浏览器跨域时会先发一个 OPTIONS 预检请求，这个必须放行
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             return true;

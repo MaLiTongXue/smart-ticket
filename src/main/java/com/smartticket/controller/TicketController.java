@@ -40,6 +40,7 @@ public class TicketController {
             @RequestParam(defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) Integer status,
             @RequestParam(required = false) String keyword) {
+        System.out.println("        ********** [Controller] page() 方法执行了 **********");
         return Result.success(ticketService.pageQuery(pageNum, pageSize, status, keyword));
     }
 
