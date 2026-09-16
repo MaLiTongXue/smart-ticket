@@ -4,36 +4,26 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.NotBlank;
 
 import java.time.LocalDateTime;
 
-/**
- * 系统用户实体，对应 sys_user 表。
- * 注意：这个类不会直接返回给前端，因为里面有密码字段。
- * 真要返回用户信息，应该单独建一个 UserVO，把密码去掉。
- */
 @TableName("sys_user")
 public class SysUser {
-
     @TableId(type = IdType.AUTO)
     private Long id;
-
     private String username;
-
-    /** 密码，存的是 MD5 值，不存明文 */
     private String password;
-
     private String nickname;
-
-    /** 角色：ADMIN 管理员，AGENT 客服 */
+    @NotBlank(message = "工单标题不能为空")
     private String role;
-
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
-
     @TableLogic
     private Integer deleted;
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
