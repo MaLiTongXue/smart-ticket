@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
@@ -75,25 +76,27 @@ public class TicketServiceImpl extends ServiceImpl<TicketMapper, Ticket> impleme
      */
     @Override
     public IPage<Ticket> pageQuery(Integer pageNum, Integer pageSize, Integer status, String keyword) {
-        // TODO 你自己写
+        //要实现分页查询
         if(pageNum==null||pageNum<1){
-            pageNum=1;
+            pageNum = 1;
         }
         if(pageSize==null||pageSize>100||pageSize<1){
-            pageSize=10;
+            pageSize = 10;
         }
+        //给他一个格式
         LambdaQueryWrapper<Ticket> wrapper = new LambdaQueryWrapper<>();
-        if(status!= null){
+        //给末尾加where deleted == 0或者1,但是不太懂，还可以查询被删除的数据吗
+        if(status!=null){
             wrapper.eq(Ticket::getStatus,status);
         }
-        if(StringUtils.hasText(keyword)) {
-            wrapper.and(w -> w.like(Ticket::getTitle, keyword).or().like(Ticket::getCustomerName, keyword));
+        if(StringUtils.hasText(keyword)){
+            wrapper.and(w->w.like(Ticket::getTitle,keyword).or().like(Ticket::getCustomerName,keyword));
         }
+        //这句忘记了，看了提示把or().like(Ticket::getCustomerName,keyword));补充出来了
         wrapper.orderByDesc(Ticket::getCreateTime);
-
-
-
-        return this.page(new Page<>(pageNum,pageSize),wrapper);
+        //格式写完，要存回去,但是忘记了,没加<>,也忘记了怎么加了，pageNum,pageSize的顺序也忘记了，前后两个PAGE的区别，第一个IRepository接口里的方法，但是不知道从哪里继承了这个接口
+        //第二个Page是MYBATIS-PLUS的方法，可以实现自动分页
+       return this.page(new Page<>(pageNum,pageSize),wrapper);
     }
 
     /**
@@ -116,20 +119,26 @@ public class TicketServiceImpl extends ServiceImpl<TicketMapper, Ticket> impleme
     public Ticket createTicket(Ticket ticket) {
         // TODO 你自己写
         // 看了提示写的很多
-        String depart = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        int randPart = ThreadLocalRandom.current().nextInt(100, 1000);
-        ticket.setTicketNo("TK"+depart+randPart);
+        //工单编号要生成，又忘记了
+        String randTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        Random r = new Random();
+        int  randInt = r.nextInt(100,1000);
+        String id = "TK"+randTime+randInt;
+        ticket.setTicketNo(id);
+        ticket.setDeleted(0);
+        //怎么不直接设置默认值忘记了
         if(ticket.getStatus()==null){
-            ticket.setStatus(0);
+           ticket.setStatus(0);
         }
         if(ticket.getPriority()==null){
+            //Priority优先级的意思
             ticket.setPriority(2);
         }
         ticket.setCreateTime(LocalDateTime.now());
         ticket.setUpdateTime(LocalDateTime.now());
-        ticket.setDeleted(0);
+        //为什么用SAVE方法也不太清楚
         this.save(ticket);
-        this.clearStatsCache();
+        clearStatsCache();
         return ticket;
     }
 
@@ -147,12 +156,12 @@ public class TicketServiceImpl extends ServiceImpl<TicketMapper, Ticket> impleme
     @Override
     public Ticket getDetail(Long id) {
         // TODO 你自己写
+        //忘记先创建对象看看是不是空，忘记getById不会直接抛出异常
         Ticket ticket = this.getById(id);
-        if(ticket == null){
-            throw new BizException("工单不存在，id = "+ id);
+        if (ticket == null){
+            //抛出又忘记怎么写了，忘记加NEW
+            throw new BizException("工单不存在,id="+id);
         }
-
-
         return ticket;
     }
 
@@ -176,15 +185,13 @@ public class TicketServiceImpl extends ServiceImpl<TicketMapper, Ticket> impleme
     @Override
     public void updateStatus(Long id, Integer status) {
         // TODO 你自己写
-        if(status == null || status < 0 || status >3){//用了更复杂的判定
-            throw new BizException("状态值不合理，只能是0,1,2,3");
+        if(status==null||status<0||status>3){
+            throw new BizException("状态值不合法，只能是 0/1/2/");
         }
-        Ticket ticket = this.getDetail(id);//用的GETBYID
-        ticket.setStatus(status);//忘记要创建对象，然后调用方法了
+        Ticket ticket = this.getDetail(id);
+        ticket.setStatus(status);
         ticket.setUpdateTime(LocalDateTime.now());
-        this.updateById(ticket);//不知道为什么这么写
-
-        
+        this.updateById(ticket);//他这个更新是怎么更新的还不清楚，咋有时候放id,有时候又可以放对象,哦不对，之前用的是getById
         this.clearStatsCache();
     }
 
@@ -206,7 +213,7 @@ public class TicketServiceImpl extends ServiceImpl<TicketMapper, Ticket> impleme
         // TODO 你自己写
         this.getDetail(id);
         this.removeById(id);
-        clearStatsCache();
+        this.clearStatsCache();
     }
 
     // ================================================================
