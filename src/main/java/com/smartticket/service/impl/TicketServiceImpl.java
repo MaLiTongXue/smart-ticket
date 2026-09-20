@@ -183,6 +183,8 @@ public class TicketServiceImpl extends ServiceImpl<TicketMapper, Ticket> impleme
         ticket.setStatus(status);//忘记要创建对象，然后调用方法了
         ticket.setUpdateTime(LocalDateTime.now());
         this.updateById(ticket);//不知道为什么这么写
+
+        
         this.clearStatsCache();
     }
 
